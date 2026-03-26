@@ -13,7 +13,7 @@ public class TileNode : MonoBehaviour
     [Header("Base Visual")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color startColor = Color.blue;
+    [SerializeField] private Color startColor ;
     [SerializeField] private Color goalColor = Color.red;
 
     public void Setup(int gridX, int gridY)

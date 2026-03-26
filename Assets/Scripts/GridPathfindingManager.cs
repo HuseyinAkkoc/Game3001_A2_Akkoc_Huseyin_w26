@@ -17,6 +17,9 @@ public class GridPathfindingManager : MonoBehaviour
     [SerializeField] private GameObject obstaclePrefab;
     [SerializeField] private GameObject routePrefab;
 
+    [Header("Special Prefabs")]
+    [SerializeField] private GameObject goalPrefab;
+
     [Header("Actor / Start / Goal")]
     [SerializeField] private ActorMover actor;
     [SerializeField] private Vector2Int startCoords = new Vector2Int(0, 0);
@@ -38,6 +41,8 @@ public class GridPathfindingManager : MonoBehaviour
     private List<GameObject> spawnedObstacles = new List<GameObject>();
     private List<GameObject> spawnedRoutes = new List<GameObject>();
 
+    private GameObject currentGoalObject;
+
     [System.Serializable]
     public class TileCostData
     {
@@ -50,6 +55,7 @@ public class GridPathfindingManager : MonoBehaviour
         BuildGrid();
         ApplyMapData();
         SpawnObstacleVisuals();
+        SpawnGoalVisual();
         UpdateSceneVisuals();
 
         if (instructionText != null)
@@ -146,6 +152,7 @@ public class GridPathfindingManager : MonoBehaviour
             {
                 goalCoords = clickedCoords;
 
+                SpawnGoalVisual();
                 ClearPathOnly();
                 UpdateSceneVisuals();
                 UpdateCostText(0);
@@ -289,6 +296,26 @@ public class GridPathfindingManager : MonoBehaviour
         spawnedRoutes.Clear();
     }
 
+    private void SpawnGoalVisual()
+    {
+        if (goalPrefab == null)
+            return;
+
+        if (currentGoalObject != null)
+        {
+            Destroy(currentGoalObject);
+        }
+
+        TileNode goalTile = grid[goalCoords.x, goalCoords.y];
+
+        currentGoalObject = Instantiate(
+            goalPrefab,
+            goalTile.transform.position,
+            Quaternion.identity,
+            goalTile.transform
+        );
+    }
+
     private void UpdateSceneVisuals()
     {
         for (int x = 0; x < rows; x++)
@@ -300,7 +327,6 @@ public class GridPathfindingManager : MonoBehaviour
         }
 
         grid[startCoords.x, startCoords.y].SetStartVisual();
-        grid[goalCoords.x, goalCoords.y].SetGoalVisual();
     }
 
     private void FindAndMove()
@@ -333,7 +359,6 @@ public class GridPathfindingManager : MonoBehaviour
         SpawnRouteVisuals(currentPath);
 
         startTile.SetStartVisual();
-        goalTile.SetGoalVisual();
 
         UpdateCostText(totalCost);
 

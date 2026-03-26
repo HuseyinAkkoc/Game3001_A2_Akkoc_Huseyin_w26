@@ -111,9 +111,7 @@ MonoBehaviour:
   isBlocked: 0
   spriteRenderer: {fileID: 883027883717847778}
   normalColor: {r: 1, g: 1, b: 1, a: 1}
-  blockedColor: {r: 0, g: 0, b: 0, a: 1}
-  pathColor: {r: 0, g: 1, b: 0, a: 1}
-  startColor: {r: 0, g: 0, b: 1, a: 1}
+  startColor: {r: 0.6901961, g: 0.74509805, b: 0.23137255, a: 1}
   goalColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!61 &-2508860528488302313
 BoxCollider2D:
