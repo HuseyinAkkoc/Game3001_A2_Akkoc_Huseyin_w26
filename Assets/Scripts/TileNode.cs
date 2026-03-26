@@ -10,11 +10,9 @@ public class TileNode : MonoBehaviour
     public int moveCost = 1;
     public bool isBlocked = false;
 
-    [Header("Optional Visuals")]
+    [Header("Base Visual")]
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private Color normalColor = Color.white;
-    [SerializeField] private Color blockedColor = Color.black;
-    [SerializeField] private Color pathColor = Color.green;
     [SerializeField] private Color startColor = Color.blue;
     [SerializeField] private Color goalColor = Color.red;
 
@@ -22,36 +20,30 @@ public class TileNode : MonoBehaviour
     {
         x = gridX;
         y = gridY;
-        UpdateVisual();
+        ResetToBaseVisual();
     }
 
-    public void UpdateVisual()
+    public void ResetToBaseVisual()
     {
-        if (spriteRenderer == null) return;
-
-        spriteRenderer.color = isBlocked ? blockedColor : normalColor;
-    }
-
-    public void SetPathVisual()
-    {
-        if (spriteRenderer != null && !isBlocked)
-            spriteRenderer.color = pathColor;
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = normalColor;
+        }
     }
 
     public void SetStartVisual()
     {
         if (spriteRenderer != null)
+        {
             spriteRenderer.color = startColor;
+        }
     }
 
     public void SetGoalVisual()
     {
         if (spriteRenderer != null)
+        {
             spriteRenderer.color = goalColor;
-    }
-
-    public void ResetToBaseVisual()
-    {
-        UpdateVisual();
+        }
     }
 }

@@ -13,6 +13,10 @@ public class GridPathfindingManager : MonoBehaviour
     [SerializeField] private GameObject tilePrefab;
     [SerializeField] private Transform gridParent;
 
+    [Header("Visual Prefabs")]
+    [SerializeField] private GameObject obstaclePrefab;
+    [SerializeField] private GameObject routePrefab;
+
     [Header("Actor / Start / Goal")]
     [SerializeField] private ActorMover actor;
     [SerializeField] private Vector2Int startCoords = new Vector2Int(0, 0);
@@ -31,6 +35,9 @@ public class GridPathfindingManager : MonoBehaviour
     private TileNode[,] grid;
     private List<TileNode> currentPath = new List<TileNode>();
 
+    private List<GameObject> spawnedObstacles = new List<GameObject>();
+    private List<GameObject> spawnedRoutes = new List<GameObject>();
+
     [System.Serializable]
     public class TileCostData
     {
@@ -42,6 +49,7 @@ public class GridPathfindingManager : MonoBehaviour
     {
         BuildGrid();
         ApplyMapData();
+        SpawnObstacleVisuals();
         UpdateSceneVisuals();
 
         if (instructionText != null)
@@ -56,6 +64,7 @@ public class GridPathfindingManager : MonoBehaviour
         if (actor != null)
         {
             actor.transform.position = grid[startCoords.x, startCoords.y].transform.position;
+            actor.transform.rotation = Quaternion.identity;
         }
 
         UpdateCostText(0);
@@ -112,7 +121,6 @@ public class GridPathfindingManager : MonoBehaviour
 
         Vector2Int clickedCoords = new Vector2Int(clickedTile.x, clickedTile.y);
 
-        // Left click = Start
         if (leftClicked)
         {
             if (clickedCoords != goalCoords)
@@ -123,6 +131,7 @@ public class GridPathfindingManager : MonoBehaviour
                 {
                     actor.transform.position = clickedTile.transform.position;
                     actor.transform.rotation = Quaternion.identity;
+                    actor.ForceStopMovement();
                 }
 
                 ClearPathOnly();
@@ -131,7 +140,6 @@ public class GridPathfindingManager : MonoBehaviour
             }
         }
 
-        // Right click = Goal
         if (rightClicked)
         {
             if (clickedCoords != startCoords)
@@ -201,6 +209,86 @@ public class GridPathfindingManager : MonoBehaviour
         grid[goalCoords.x, goalCoords.y].isBlocked = false;
     }
 
+    private void SpawnObstacleVisuals()
+    {
+        ClearObstacleVisuals();
+
+        if (obstaclePrefab == null)
+            return;
+
+        for (int x = 0; x < rows; x++)
+        {
+            for (int y = 0; y < cols; y++)
+            {
+                if (grid[x, y].isBlocked)
+                {
+                    GameObject obstacle = Instantiate(
+                        obstaclePrefab,
+                        grid[x, y].transform.position,
+                        Quaternion.identity,
+                        grid[x, y].transform
+                    );
+
+                    spawnedObstacles.Add(obstacle);
+                }
+            }
+        }
+    }
+
+    private void ClearObstacleVisuals()
+    {
+        for (int i = 0; i < spawnedObstacles.Count; i++)
+        {
+            if (spawnedObstacles[i] != null)
+            {
+                Destroy(spawnedObstacles[i]);
+            }
+        }
+
+        spawnedObstacles.Clear();
+    }
+
+    private void SpawnRouteVisuals(List<TileNode> path)
+    {
+        ClearRouteVisuals();
+
+        if (routePrefab == null || path == null || path.Count == 0)
+            return;
+
+        TileNode startTile = grid[startCoords.x, startCoords.y];
+        TileNode goalTile = grid[goalCoords.x, goalCoords.y];
+
+        for (int i = 0; i < path.Count; i++)
+        {
+            TileNode tile = path[i];
+
+            if (tile == startTile || tile == goalTile)
+                continue;
+
+            GameObject route = Instantiate(
+                routePrefab,
+                tile.transform.position,
+                Quaternion.identity,
+                tile.transform
+            );
+
+            spawnedRoutes.Add(route);
+        }
+    }
+
+    private void ClearRouteVisuals()
+    {
+        for (int i = 0; i < spawnedRoutes.Count; i++)
+        {
+            if (spawnedRoutes[i] != null)
+            {
+                Destroy(spawnedRoutes[i]);
+            }
+        }
+
+        spawnedRoutes.Clear();
+    }
+
     private void UpdateSceneVisuals()
     {
         for (int x = 0; x < rows; x++)
@@ -227,6 +315,7 @@ public class GridPathfindingManager : MonoBehaviour
         if (currentPath == null || currentPath.Count == 0)
         {
             Debug.Log("No path found.");
+            ClearRouteVisuals();
             UpdateCostText(0);
             return;
         }
@@ -235,12 +324,13 @@ public class GridPathfindingManager : MonoBehaviour
 
         for (int i = 0; i < currentPath.Count; i++)
         {
-            if (currentPath[i] != startTile && currentPath[i] != goalTile)
-                currentPath[i].SetPathVisual();
-
             if (currentPath[i] != startTile)
+            {
                 totalCost += currentPath[i].moveCost;
+            }
         }
+
+        SpawnRouteVisuals(currentPath);
 
         startTile.SetStartVisual();
         goalTile.SetGoalVisual();
@@ -255,7 +345,9 @@ public class GridPathfindingManager : MonoBehaviour
         List<TileNode> movementPath = new List<TileNode>(path);
 
         if (movementPath.Count > 0)
+        {
             movementPath.RemoveAt(0);
+        }
 
         yield return StartCoroutine(actor.FollowPath(movementPath));
     }
@@ -325,7 +417,9 @@ public class GridPathfindingManager : MonoBehaviour
                         existingNode.parent = currentNode;
 
                         if (!openList.Contains(existingNode))
+                        {
                             openList.Add(existingNode);
+                        }
                     }
                 }
             }
@@ -398,6 +492,7 @@ public class GridPathfindingManager : MonoBehaviour
     private void ClearPathOnly()
     {
         currentPath.Clear();
+        ClearRouteVisuals();
 
         for (int x = 0; x < rows; x++)
         {
