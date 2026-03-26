@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GridPathfindingManager : MonoBehaviour
 {
@@ -45,7 +46,11 @@ public class GridPathfindingManager : MonoBehaviour
 
         if (instructionText != null)
         {
-            instructionText.text = "F = Find Shortest Path\nR = Reset Scene";
+            instructionText.text =
+                "Left Click = Set Start\n" +
+                "Right Click = Set Goal\n" +
+                "F = Find Shortest Path\n" +
+                "R = Reset Scene";
         }
 
         if (actor != null)
@@ -58,7 +63,9 @@ public class GridPathfindingManager : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        HandleMouseSelection();
+
+        if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
         {
             if (actor != null && !actor.IsMoving)
             {
@@ -66,9 +73,75 @@ public class GridPathfindingManager : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
         {
             ResetScene();
+        }
+    }
+
+    private void HandleMouseSelection()
+    {
+        if (actor != null && actor.IsMoving)
+            return;
+
+        if (Mouse.current == null)
+            return;
+
+        bool leftClicked = Mouse.current.leftButton.wasPressedThisFrame;
+        bool rightClicked = Mouse.current.rightButton.wasPressedThisFrame;
+
+        if (!leftClicked && !rightClicked)
+            return;
+
+        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
+        Vector2 mousePos2D = new Vector2(mouseWorldPos.x, mouseWorldPos.y);
+
+        RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
+
+        if (!hit.collider)
+            return;
+
+        TileNode clickedTile = hit.collider.GetComponent<TileNode>();
+
+        if (clickedTile == null)
+            return;
+
+        if (clickedTile.isBlocked)
+            return;
+
+        Vector2Int clickedCoords = new Vector2Int(clickedTile.x, clickedTile.y);
+
+        // Left click = Start
+        if (leftClicked)
+        {
+            if (clickedCoords != goalCoords)
+            {
+                startCoords = clickedCoords;
+
+                if (actor != null)
+                {
+                    actor.transform.position = clickedTile.transform.position;
+                    actor.transform.rotation = Quaternion.identity;
+                }
+
+                ClearPathOnly();
+                UpdateSceneVisuals();
+                UpdateCostText(0);
+            }
+        }
+
+        // Right click = Goal
+        if (rightClicked)
+        {
+            if (clickedCoords != startCoords)
+            {
+                goalCoords = clickedCoords;
+
+                ClearPathOnly();
+                UpdateSceneVisuals();
+                UpdateCostText(0);
+            }
         }
     }
 
@@ -182,7 +255,7 @@ public class GridPathfindingManager : MonoBehaviour
         List<TileNode> movementPath = new List<TileNode>(path);
 
         if (movementPath.Count > 0)
-            movementPath.RemoveAt(0); // remove start tile so actor does not "move" to its current tile
+            movementPath.RemoveAt(0);
 
         yield return StartCoroutine(actor.FollowPath(movementPath));
     }
@@ -288,7 +361,7 @@ public class GridPathfindingManager : MonoBehaviour
         int x = tile.x;
         int y = tile.y;
 
-        if (IsInBounds(x - 1, y)) neighbors.Add(grid[x - 1, y]); // up/down depending on your view
+        if (IsInBounds(x - 1, y)) neighbors.Add(grid[x - 1, y]);
         if (IsInBounds(x + 1, y)) neighbors.Add(grid[x + 1, y]);
         if (IsInBounds(x, y - 1)) neighbors.Add(grid[x, y - 1]);
         if (IsInBounds(x, y + 1)) neighbors.Add(grid[x, y + 1]);
@@ -304,8 +377,7 @@ public class GridPathfindingManager : MonoBehaviour
     private void ResetScene()
     {
         StopAllCoroutines();
-        currentPath.Clear();
-
+        ClearPathOnly();
         UpdateSceneVisuals();
 
         if (actor != null)
@@ -315,6 +387,19 @@ public class GridPathfindingManager : MonoBehaviour
         }
 
         UpdateCostText(0);
+    }
+
+    private void ClearPathOnly()
+    {
+        currentPath.Clear();
+
+        for (int x = 0; x < rows; x++)
+        {
+            for (int y = 0; y < cols; y++)
+            {
+                grid[x, y].ResetToBaseVisual();
+            }
+        }
     }
 
     private void UpdateCostText(int totalCost)
