@@ -1140,7 +1140,13 @@ MonoBehaviour:
   goalCoords: {x: 9, y: 9}
   instructionText: {fileID: 0}
   totalCostText: {fileID: 0}
-  blockedTiles: []
+  blockedTiles:
+  - {x: 5, y: 5}
+  - {x: 5, y: 6}
+  - {x: 5, y: 7}
+  - {x: 2, y: 2}
+  - {x: 3, y: 2}
+  - {x: 4, y: 2}
   customTileCosts: []
 --- !u!4 &1886345227
 Transform:

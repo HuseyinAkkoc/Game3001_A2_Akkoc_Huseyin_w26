@@ -1,7 +1,6 @@
-using UnityEngine;
-
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class ActorMover : MonoBehaviour
 {
@@ -13,7 +12,10 @@ public class ActorMover : MonoBehaviour
     public IEnumerator FollowPath(List<TileNode> path)
     {
         if (path == null || path.Count == 0)
+        {
+            IsMoving = false;
             yield break;
+        }
 
         IsMoving = true;
 
@@ -42,6 +44,11 @@ public class ActorMover : MonoBehaviour
             transform.position = targetPos;
         }
 
+        IsMoving = false;
+    }
+
+    public void ForceStopMovement()
+    {
         IsMoving = false;
     }
 

@@ -377,6 +377,12 @@ public class GridPathfindingManager : MonoBehaviour
     private void ResetScene()
     {
         StopAllCoroutines();
+
+        if (actor != null)
+        {
+            actor.ForceStopMovement();
+        }
+
         ClearPathOnly();
         UpdateSceneVisuals();
 
