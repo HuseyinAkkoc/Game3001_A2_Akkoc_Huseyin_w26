@@ -399,6 +399,7 @@ GameObject:
   m_Component:
   - component: {fileID: 525840927}
   - component: {fileID: 525840928}
+  - component: {fileID: 525840929}
   m_Layer: 0
   m_Name: Mouse Asset
   m_TagString: Untagged
@@ -414,14 +415,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 525840926}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1339158784}
   - {fileID: 1369581451}
-  m_Father: {fileID: 1116772721}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &525840928
 SpriteRenderer:
@@ -470,7 +471,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 1
+  m_SortingOrder: 2
   m_MaskInteraction: 0
   m_Sprite: {fileID: 1668624912041536552, guid: 7eb882ef4709b6d47ad0f6ad3f5ba04e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -482,6 +483,20 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &525840929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 525840926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c57fdb4b158e97f46bb6c0075b3b9cf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ActorMover
+  moveSpeed: 3
+  rotateToDirection: 1
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -623,7 +638,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Press instruction if you need help  -->
+  m_text: Press instruction if you need help how to play  -->
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1066,7 +1081,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1116772720
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1093,8 +1108,7 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 525840927}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1230923620
@@ -1447,7 +1461,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1339158784
 Transform:
   m_ObjectHideFlags: 0
@@ -1538,7 +1552,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1369581451
 Transform:
   m_ObjectHideFlags: 0
@@ -1794,10 +1808,14 @@ MonoBehaviour:
   cellSize: 1
   tilePrefab: {fileID: 7313060646240284820, guid: 4e2c644a5a46f784f9f80676c96c5731, type: 3}
   gridParent: {fileID: 1886345227}
-  obstaclePrefab: {fileID: 2520144686791702522, guid: b8a2104bbca236948a16b9edcc0d4235, type: 3}
+  obstaclePrefabs:
+  - {fileID: 2520144686791702522, guid: b8a2104bbca236948a16b9edcc0d4235, type: 3}
+  - {fileID: 4655907685875186626, guid: 40caf33bc2ff7cc46bd0f9b917f92e3d, type: 3}
+  - {fileID: 1770874305230492109, guid: baa25db8209c6bf4c8fc559ca743f160, type: 3}
   routePrefab: {fileID: 6809320085470291962, guid: 6f168c398dcd1c44d9cc6794d9987e88, type: 3}
+  startPrefab: {fileID: 5117303893169977113, guid: e558ab703a2c9cf4ea538b5418af6a0c, type: 3}
   goalPrefab: {fileID: 1779456692569485839, guid: 8f8fc0e525e8ec344bd416de2f0ffd0a, type: 3}
-  actor: {fileID: 1116772720}
+  actor: {fileID: 525840929}
   startCoords: {x: 0, y: 0}
   goalCoords: {x: 9, y: 9}
   instructionText: {fileID: 0}
@@ -1834,6 +1852,7 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 619394802}
+  - {fileID: 525840927}
   - {fileID: 1116772721}
   - {fileID: 1886345227}
   - {fileID: 1230923624}

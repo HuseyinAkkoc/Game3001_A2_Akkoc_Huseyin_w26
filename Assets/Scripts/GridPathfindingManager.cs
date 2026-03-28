@@ -14,8 +14,9 @@ public class GridPathfindingManager : MonoBehaviour
     [SerializeField] private Transform gridParent;
 
     [Header("Visual Prefabs")]
-    [SerializeField] private GameObject obstaclePrefab;
+    [SerializeField] private GameObject[] obstaclePrefabs;
     [SerializeField] private GameObject routePrefab;
+    
 
     [Header("Special Prefabs")]
     [SerializeField] private GameObject startPrefab;
@@ -54,6 +55,7 @@ public class GridPathfindingManager : MonoBehaviour
 
     private void Start()
     {
+        
         BuildGrid();
         ApplyMapData();
         SpawnObstacleVisuals();
@@ -221,7 +223,7 @@ public class GridPathfindingManager : MonoBehaviour
     {
         ClearObstacleVisuals();
 
-        if (obstaclePrefab == null)
+        if (obstaclePrefabs == null || obstaclePrefabs.Length == 0)
             return;
 
         for (int x = 0; x < rows; x++)
@@ -230,8 +232,13 @@ public class GridPathfindingManager : MonoBehaviour
             {
                 if (grid[x, y].isBlocked)
                 {
+                    // pick random prefab
+                    GameObject randomObstacle = obstaclePrefabs[
+                        Random.Range(0, obstaclePrefabs.Length)
+                    ];
+
                     GameObject obstacle = Instantiate(
-                        obstaclePrefab,
+                        randomObstacle,
                         grid[x, y].transform.position,
                         Quaternion.identity,
                         grid[x, y].transform
