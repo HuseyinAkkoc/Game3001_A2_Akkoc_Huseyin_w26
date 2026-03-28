@@ -18,6 +18,7 @@ public class GridPathfindingManager : MonoBehaviour
     [SerializeField] private GameObject routePrefab;
 
     [Header("Special Prefabs")]
+    [SerializeField] private GameObject startPrefab;
     [SerializeField] private GameObject goalPrefab;
 
     [Header("Actor / Start / Goal")]
@@ -41,6 +42,7 @@ public class GridPathfindingManager : MonoBehaviour
     private List<GameObject> spawnedObstacles = new List<GameObject>();
     private List<GameObject> spawnedRoutes = new List<GameObject>();
 
+    private GameObject currentStartObject;
     private GameObject currentGoalObject;
 
     [System.Serializable]
@@ -55,8 +57,9 @@ public class GridPathfindingManager : MonoBehaviour
         BuildGrid();
         ApplyMapData();
         SpawnObstacleVisuals();
-        SpawnGoalVisual();
         UpdateSceneVisuals();
+        SpawnStartVisual();
+        SpawnGoalVisual();
 
         if (instructionText != null)
         {
@@ -99,7 +102,7 @@ public class GridPathfindingManager : MonoBehaviour
         if (actor != null && actor.IsMoving)
             return;
 
-        if (Mouse.current == null)
+        if (Mouse.current == null || Camera.main == null)
             return;
 
         bool leftClicked = Mouse.current.leftButton.wasPressedThisFrame;
@@ -108,55 +111,53 @@ public class GridPathfindingManager : MonoBehaviour
         if (!leftClicked && !rightClicked)
             return;
 
-        Vector2 mouseScreenPos = Mouse.current.position.ReadValue();
+        Vector3 mouseScreenPos = Mouse.current.position.ReadValue();
+        mouseScreenPos.z = Mathf.Abs(Camera.main.transform.position.z);
+
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mouseScreenPos);
         Vector2 mousePos2D = new Vector2(mouseWorldPos.x, mouseWorldPos.y);
 
         RaycastHit2D hit = Physics2D.Raycast(mousePos2D, Vector2.zero);
 
+      //  Debug.Log(hit.collider.name);
+
         if (!hit.collider)
             return;
 
-        TileNode clickedTile = hit.collider.GetComponent<TileNode>();
+        TileNode clickedTile = hit.collider.GetComponentInParent<TileNode>();
 
-        if (clickedTile == null)
-            return;
-
-        if (clickedTile.isBlocked)
+        if (clickedTile == null || clickedTile.isBlocked)
             return;
 
         Vector2Int clickedCoords = new Vector2Int(clickedTile.x, clickedTile.y);
 
-        if (leftClicked)
+        if (leftClicked && clickedCoords != goalCoords)
         {
-            if (clickedCoords != goalCoords)
+            startCoords = clickedCoords;
+
+            if (actor != null)
             {
-                startCoords = clickedCoords;
-
-                if (actor != null)
-                {
-                    actor.transform.position = clickedTile.transform.position;
-                    actor.transform.rotation = Quaternion.identity;
-                    actor.ForceStopMovement();
-                }
-
-                ClearPathOnly();
-                UpdateSceneVisuals();
-                UpdateCostText(0);
+                actor.ForceStopMovement();
+                actor.transform.position = clickedTile.transform.position;
+                actor.transform.rotation = Quaternion.identity;
             }
+
+            ClearPathOnly();
+            UpdateSceneVisuals();
+            SpawnStartVisual();
+            SpawnGoalVisual();
+            UpdateCostText(0);
         }
 
-        if (rightClicked)
+        if (rightClicked && clickedCoords != startCoords)
         {
-            if (clickedCoords != startCoords)
-            {
-                goalCoords = clickedCoords;
+            goalCoords = clickedCoords;
 
-                SpawnGoalVisual();
-                ClearPathOnly();
-                UpdateSceneVisuals();
-                UpdateCostText(0);
-            }
+            ClearPathOnly();
+            UpdateSceneVisuals();
+            SpawnStartVisual();
+            SpawnGoalVisual();
+            UpdateCostText(0);
         }
     }
 
@@ -296,6 +297,25 @@ public class GridPathfindingManager : MonoBehaviour
         spawnedRoutes.Clear();
     }
 
+    private void SpawnStartVisual()
+    {
+        if (startPrefab == null)
+            return;
+
+        if (currentStartObject != null)
+        {
+            Destroy(currentStartObject);
+        }
+
+        TileNode startTile = grid[startCoords.x, startCoords.y];
+
+        currentStartObject = Instantiate(
+            startPrefab,
+            startTile.transform.position,
+            Quaternion.identity
+        );
+    }
+
     private void SpawnGoalVisual()
     {
         if (goalPrefab == null)
@@ -311,8 +331,7 @@ public class GridPathfindingManager : MonoBehaviour
         currentGoalObject = Instantiate(
             goalPrefab,
             goalTile.transform.position,
-            Quaternion.identity,
-            goalTile.transform
+            Quaternion.identity
         );
     }
 
@@ -325,13 +344,13 @@ public class GridPathfindingManager : MonoBehaviour
                 grid[x, y].ResetToBaseVisual();
             }
         }
-
-        grid[startCoords.x, startCoords.y].SetStartVisual();
     }
 
     private void FindAndMove()
     {
         UpdateSceneVisuals();
+        SpawnStartVisual();
+        SpawnGoalVisual();
 
         TileNode startTile = grid[startCoords.x, startCoords.y];
         TileNode goalTile = grid[goalCoords.x, goalCoords.y];
@@ -357,9 +376,6 @@ public class GridPathfindingManager : MonoBehaviour
         }
 
         SpawnRouteVisuals(currentPath);
-
-        startTile.SetStartVisual();
-
         UpdateCostText(totalCost);
 
         StartCoroutine(MoveActorAlongPath(currentPath));
@@ -504,6 +520,8 @@ public class GridPathfindingManager : MonoBehaviour
 
         ClearPathOnly();
         UpdateSceneVisuals();
+        SpawnStartVisual();
+        SpawnGoalVisual();
 
         if (actor != null)
         {
