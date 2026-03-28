@@ -1,5 +1,5 @@
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class PlaySceneUIs : MonoBehaviour
 {
     [Header("Panel Reference")]
@@ -34,4 +34,17 @@ public class PlaySceneUIs : MonoBehaviour
     }
 
 
+
+    public void GoToMainMenu()
+    {
+        if (instructionPanel != null)
+        {
+            SceneManager.LoadScene("StartScene");
+           
+            Time.timeScale = 1f; // RESUME GAME
+        }
+    }
+
+
 }
+
